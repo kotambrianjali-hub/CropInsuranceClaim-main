@@ -45,14 +45,17 @@ app = FastAPI(
 )
 
 # CORS configuration
-if settings.CORS_ORIGINS:
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=settings.CORS_ORIGINS,
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
+origins = settings.CORS_ORIGINS if settings.CORS_ORIGINS else ["*"]
+allow_all = "*" in origins
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"] if allow_all else origins,
+    allow_origin_regex=r"https://.*\.vercel\.app" if not allow_all else None,
+    allow_credentials=not allow_all,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Include API v1 Router
 app.include_router(api_router, prefix=settings.API_V1_PREFIX)
